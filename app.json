@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#1a73e8"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.polymer.jobhunter",
@@ -37,7 +39,11 @@
     "extra": {
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "81c26131-94bc-499e-bba2-4658b0aef3d6"
       }
-    }
+    },
+    "owner": "xzming"
   }
 }
