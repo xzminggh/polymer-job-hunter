@@ -22,11 +22,15 @@ interface JobsContextValue {
 }
 
 // ── 远程配置 ─────────────────────────────────────────────────
-// GitHub Raw URL — 数据源（xzminggh 账号，master 分支）
-const META_URL =
-  'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data/jobs-meta.json';
-const DATA_URL =
-  'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data/realJobs.json';
+// 双数据源：Gitee（国内优先） + GitHub（国际降级）
+const GITEE_BASE = 'https://gitee.com/xzmingmy/polymer-job-hunter/raw/master/data';
+const GITHUB_BASE = 'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data';
+
+// 动态选择数据源（Gitee 优先，失败降级 GitHub）
+let activeBase = GITEE_BASE;
+
+const META_FILE = 'jobs-meta.json';
+const DATA_FILE = 'realJobs.json';
 
 const CACHE_KEY = 'job_hunter_remote_data';
 const META_CACHE_KEY = 'job_hunter_remote_meta';
@@ -47,6 +51,31 @@ async function fetchJson(url: string, timeout = 8000): Promise<any> {
     clearTimeout(id);
     return null;
   }
+}
+
+// 自动切换数据源：先试 Gitee，失败降级 GitHub
+async function fetchMetaWithFallback(): Promise<any> {
+  const giteeMeta = await fetchJson(`${activeBase}/${META_FILE}`);
+  if (giteeMeta) return giteeMeta;
+  // Gitee 失败，降级到 GitHub
+  if (activeBase !== GITHUB_BASE) {
+    const githubMeta = await fetchJson(`${GITHUB_BASE}/${META_FILE}`);
+    if (githubMeta) {
+      activeBase = GITHUB_BASE; // 后续请求也用 GitHub
+      return githubMeta;
+    }
+  }
+  return null;
+}
+
+async function fetchDataWithFallback(): Promise<any> {
+  const data = await fetchJson(`${activeBase}/${DATA_FILE}`, 15000);
+  if (data) return data;
+  if (activeBase !== GITHUB_BASE) {
+    const fallback = await fetchJson(`${GITHUB_BASE}/${DATA_FILE}`, 15000);
+    if (fallback) return fallback;
+  }
+  return null;
 }
 
 async function getCached(): Promise<RemoteJobsData | null> {
@@ -94,8 +123,8 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   const smartUpdate = useCallback(async (force = false) => {
     setLoading(true);
     try {
-      // 1. 获取远程元数据
-      const remoteMeta = await fetchJson(META_URL);
+      // 1. 获取远程元数据（Gitee优先，GitHub降级）
+      const remoteMeta = await fetchMetaWithFallback();
       if (!remoteMeta) {
         // 网络失败，尝试使用缓存
         const cached = await getCached();
@@ -124,8 +153,8 @@ export function JobsProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // 4. 下载完整数据
-      const remoteData = await fetchJson(DATA_URL, 15000);
+      // 4. 下载完整数据（Gitee优先，GitHub降级）
+      const remoteData = await fetchDataWithFallback();
       if (remoteData?.jobs) {
         await setCached(remoteData);
         await AsyncStorage.setItem(LAST_CHECK_KEY, Date.now().toString());

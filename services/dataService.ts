@@ -5,16 +5,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Job } from '../types/job';
 
 // ── 配置 ─────────────────────────────────────────
-// GitHub Raw URL（需替换为实际仓库路径）
-// 格式：https://raw.githubusercontent.com/{user}/{repo}/{branch}/{path}
-const REMOTE_BASE = 'https://raw.githubusercontent.com';
-const REMOTE_REPO = 'xzming/polymer-job-hunter/main/recruitment-app/data';
+// 双数据源：Gitee（国内优先） + GitHub（国际降级）
+const GITEE_BASE = 'https://gitee.com/xzmingmy/polymer-job-hunter/raw/master/data';
+const GITHUB_BASE = 'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data';
+
+let activeBase = GITEE_BASE;
 
 // 轻量元数据（仅版本号，快速检查是否需要更新）
-const META_URL = `${REMOTE_BASE}/${REMOTE_REPO}/jobs-meta.json`;
-
-// 完整数据
-const DATA_URL = `${REMOTE_BASE}/${REMOTE_REPO}/realJobs.json`;
+const META_FILE = 'jobs-meta.json';
+const DATA_FILE = 'realJobs.json';
+const META_URL = `${activeBase}/${META_FILE}`;
+const DATA_URL = `${activeBase}/${DATA_FILE}`;
 
 // 本地缓存 key
 const CACHE_KEY = 'job_hunter_remote_data';
@@ -42,27 +43,51 @@ export interface RemoteJobsData {
 
 /**
  * 获取元数据（轻量，快速判断是否有更新）
+ * Gitee 优先，失败降级 GitHub
  */
 export async function fetchMeta(): Promise<JobsMetaData | null> {
   try {
-    const res = await fetch(META_URL, { cache: 'no-cache' });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
+    const res = await fetch(`${GITEE_BASE}/${META_FILE}`, { cache: 'no-cache' });
+    if (res.ok) {
+      activeBase = GITEE_BASE;
+      return await res.json();
+    }
+  } catch {}
+  // 降级 GitHub
+  try {
+    const res = await fetch(`${GITHUB_BASE}/${META_FILE}`, { cache: 'no-cache' });
+    if (res.ok) {
+      activeBase = GITHUB_BASE;
+      return await res.json();
+    }
+  } catch {}
+  return null;
 }
 
 /**
  * 获取完整岗位数据（远程）
+ * 使用当前活跃的数据源（Gitee 或 GitHub）
  */
 async function fetchRemoteData(): Promise<RemoteJobsData | null> {
+  const url = `${activeBase}/${DATA_FILE}`;
   try {
-    const res = await fetch(DATA_URL, {
+    const res = await fetch(url, {
       cache: 'no-cache',
-      signal: AbortSignal.timeout(8000), // 8秒超时
+      signal: AbortSignal.timeout(12000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // 降级尝试另一个源
+      const fallbackUrl = activeBase === GITEE_BASE
+        ? `${GITHUB_BASE}/${DATA_FILE}`
+        : `${GITEE_BASE}/${DATA_FILE}`;
+      const fallbackRes = await fetch(fallbackUrl, {
+        cache: 'no-cache',
+        signal: AbortSignal.timeout(12000),
+      });
+      if (!fallbackRes.ok) return null;
+      activeBase = activeBase === GITEE_BASE ? GITHUB_BASE : GITEE_BASE;
+      return await fallbackRes.json();
+    }
     return await res.json();
   } catch {
     return null;

@@ -1,28 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, Switch, TouchableOpacity, Alert, ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useJobs } from '../../contexts/JobsContext';
+import {
+  getUpdateFrequency, scheduleUpdateReminder, cancelUpdateReminder,
+  isNotificationEnabled, sendTestNotification, requestNotificationPermission,
+} from '../../services/notificationService';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { jobs, loading, lastUpdate, refresh } = useJobs();
+  const { jobs, loading, lastUpdate, dataSource, refresh } = useJobs();
 
-  const [enableDeadlineReminder, setEnableDeadlineReminder] = useState(true);
   const [enableNewJobPush, setEnableNewJobPush] = useState(true);
-  const [enableWeeklyRecommendation, setEnableWeeklyRecommendation] = useState(true);
+  const [enableDeadlineReminder, setEnableDeadlineReminder] = useState(true);
   const [reminderDays, setReminderDays] = useState(3);
   const [updateFrequency, setUpdateFrequency] = useState(3);
   const [checking, setChecking] = useState(false);
+
+  // 启动时从持久化存储读取设置
+  useEffect(() => {
+    (async () => {
+      const freq = await getUpdateFrequency();
+      const enabled = await isNotificationEnabled();
+      setUpdateFrequency(freq);
+      setEnableNewJobPush(enabled);
+    })();
+  }, []);
+
+  // 通知开关切换 → 调度/取消定时通知
+  const handlePushToggle = async (value: boolean) => {
+    if (value) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        Alert.alert('提示', '需要在系统设置中允许通知权限');
+        return;
+      }
+      await scheduleUpdateReminder(updateFrequency);
+      setEnableNewJobPush(true);
+    } else {
+      await cancelUpdateReminder();
+      setEnableNewJobPush(false);
+    }
+  };
+
+  // 更新频率切换 → 重新调度定时通知
+  const handleFrequencyChange = async (days: number) => {
+    setUpdateFrequency(days);
+    if (enableNewJobPush) {
+      await scheduleUpdateReminder(days);
+    }
+  };
 
   // 手动检查更新
   const handleManualUpdate = async () => {
     setChecking(true);
     try {
       await refresh();
-      Alert.alert('更新完成', `已获取最新岗位数据，当前共 ${jobs.length} 个岗位`);
+      Alert.alert('更新完成', `已获取最新岗位数据，当前共 ${jobs.length} 个岗位\n数据来源：${dataSource === 'remote' ? '远程更新' : '本地内置'}`);
     } catch (e: any) {
       Alert.alert('更新失败', e.message || '请检查网络连接后重试');
     } finally {
@@ -30,10 +67,21 @@ export default function SettingsScreen() {
     }
   };
 
+  // 发送测试通知
+  const handleTestNotify = async () => {
+    await sendTestNotification();
+    Alert.alert('测试通知', '通知已发送，请查看通知栏');
+  };
+
   // 开关设置项
-  const SwitchItem = ({ label, value, onToggle }: { label: string; value: boolean; onToggle: () => void }) => (
+  const SwitchItem = ({ label, value, onToggle, description }: {
+    label: string; value: boolean; onToggle: () => void; description?: string;
+  }) => (
     <View style={styles.settingItem}>
-      <Text style={styles.settingLabel}>{label}</Text>
+      <View>
+        <Text style={styles.settingLabel}>{label}</Text>
+        {description && <Text style={styles.settingDesc}>{description}</Text>}
+      </View>
       <Switch
         value={value}
         onValueChange={onToggle}
@@ -61,9 +109,17 @@ export default function SettingsScreen() {
         {/* 通知设置 */}
         <Text style={styles.groupTitle}>通知设置</Text>
         <View style={styles.group}>
-          <SwitchItem label="截止日期提醒" value={enableDeadlineReminder} onToggle={() => setEnableDeadlineReminder(!enableDeadlineReminder)} />
-          <SwitchItem label="新岗位推送" value={enableNewJobPush} onToggle={() => setEnableNewJobPush(!enableNewJobPush)} />
-          <SwitchItem label="每周推荐" value={enableWeeklyRecommendation} onToggle={() => setEnableWeeklyRecommendation(!enableWeeklyRecommendation)} />
+          <SwitchItem
+            label="新岗位推送"
+            description={`每${updateFrequency}天上午9点提醒检查更新`}
+            value={enableNewJobPush}
+            onToggle={() => handlePushToggle(!enableNewJobPush)}
+          />
+          <SwitchItem
+            label="截止日期提醒"
+            value={enableDeadlineReminder}
+            onToggle={() => setEnableDeadlineReminder(!enableDeadlineReminder)}
+          />
           <LinkItem
             label="提醒提前天数"
             value={`${reminderDays}天`}
@@ -73,6 +129,11 @@ export default function SettingsScreen() {
               { text: '7天', onPress: () => setReminderDays(7) },
             ])}
           />
+          {enableNewJobPush && (
+            <TouchableOpacity style={styles.testNotifyBtn} onPress={handleTestNotify} activeOpacity={0.7}>
+              <Text style={styles.testNotifyText}>发送测试通知</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* 数据更新 */}
@@ -82,13 +143,14 @@ export default function SettingsScreen() {
             label="更新频率"
             value={`每${updateFrequency}天`}
             onPress={() => Alert.alert('更新频率', '选择数据更新频率', [
-              { text: '每1天', onPress: () => setUpdateFrequency(1) },
-              { text: '每3天', onPress: () => setUpdateFrequency(3) },
-              { text: '每7天', onPress: () => setUpdateFrequency(7) },
+              { text: '每1天', onPress: () => handleFrequencyChange(1) },
+              { text: '每3天（推荐）', onPress: () => handleFrequencyChange(3) },
+              { text: '每7天', onPress: () => handleFrequencyChange(7) },
             ])}
           />
           <LinkItem label="上次更新" value={lastUpdate || '未知'} />
           <LinkItem label="岗位总数" value={`${jobs.length} 个`} />
+          <LinkItem label="数据来源" value={dataSource === 'remote' ? '远程更新' : '本地内置'} />
           {/* 手动检查更新按钮 */}
           <TouchableOpacity
             style={[styles.updateBtn, checking && styles.updateBtnDisabled]}
@@ -111,8 +173,9 @@ export default function SettingsScreen() {
           <LinkItem label="数据来源" value="21家企业 + 15家研究院" />
           <LinkItem
             label="下次自动更新"
-            value={updateFrequency === 1 ? '每天' : `每${updateFrequency}天`}
+            value={enableNewJobPush ? `每${updateFrequency}天上午9点` : '已关闭'}
           />
+          <LinkItem label="数据托管" value="Gitee（国内）+ GitHub（国际）" />
         </View>
 
         {/* 底部信息 */}
@@ -163,12 +226,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1a1a1a',
   },
+  settingDesc: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
   settingValue: {
     fontSize: 14,
     color: '#1a73e8',
   },
   settingValueStatic: {
     color: '#999',
+  },
+  testNotifyBtn: {
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  testNotifyText: {
+    fontSize: 13,
+    color: '#1a73e8',
   },
   updateBtn: {
     margin: 12,
