@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, StatusBar, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { realJobs } from '../../data/realData';
 import { Job } from '../../types/job';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useJobs } from '../../contexts/JobsContext';
 
 export default function JobDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { jobs, getJobById } = useJobs();
   const { isFavorited, toggleFavorite } = useFavorites();
 
   // 根据ID获取岗位数据
-  const job = realJobs.find((j: any) => j.id === id) || realJobs[0];
-  const favorited = isFavorited(job.id);
+  const job = getJobById(id) || jobs[0];
+  const favorited = isFavorited(job?.id || '');
 
   // 返回
   const handleBack = () => {

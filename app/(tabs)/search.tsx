@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, ScrollView,
-  TouchableOpacity, TextInput, FlatList,
+  TouchableOpacity, TextInput, FlatList, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { realJobs, filterJobs, getCities, getJobTypes, SearchCriteria } from '../../data/realData';
+import { filterJobs, getCities, getJobTypes } from '../../data/realData';
 import JobCard from '../../components/JobCard';
 import { Job } from '../../types/job';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useJobs } from '../../contexts/JobsContext';
 
 const EDUCATION_OPTIONS = ['不限', '硕士', '博士'];
 const CATEGORY_OPTIONS = ['全部', '企业', '研究院', '高校'];
@@ -15,7 +16,9 @@ const DATE_OPTIONS = ['全部', '近3天', '近7天', '近30天'];
 
 export default function SearchScreen() {
   const router = useRouter();
+  const { jobs, loading } = useJobs();
   const { isFavorited, toggleFavorite } = useFavorites();
+
   const [keyword, setKeyword] = useState('');
   const [city, setCity] = useState('');         // 单选，空 = 全部
   const [education, setEducation] = useState('不限');
@@ -24,12 +27,13 @@ export default function SearchScreen() {
   const [publishDate, setPublishDate] = useState('全部');
   const [filterExpanded, setFilterExpanded] = useState(true);
 
-  const cities = useMemo(() => getCities(), []);
-  const jobTypes = useMemo(() => getJobTypes(), []);
+  // 动态城市 / 岗位类型列表
+  const cities = useMemo(() => getCities(jobs), [jobs]);
+  const jobTypes = useMemo(() => getJobTypes(jobs), [jobs]);
 
-  // 实时筛选 —— 改任何条件，结果立即更新
+  // 实时筛选
   const filteredJobs = useMemo(() => {
-    return filterJobs(realJobs, {
+    return filterJobs(jobs, {
       keyword,
       city,
       education,
@@ -37,7 +41,7 @@ export default function SearchScreen() {
       category,
       publishDateRange: publishDate,
     });
-  }, [keyword, city, education, jobType, category, publishDate]);
+  }, [jobs, keyword, city, education, jobType, category, publishDate]);
 
   // 当前已激活的筛选条件数量
   const activeFilterCount = useMemo(() => {
@@ -152,7 +156,7 @@ export default function SearchScreen() {
 
           {/* 岗位类型（单选） */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>💼 岗位类型</Text>
+            <Text style={styles.filterSectionTitle}>🔧 岗位类型</Text>
             <View style={styles.chipRow}>
               <Chip label="全部" selected={jobType === ''} onPress={() => setJobType('')} />
               {jobTypes.map(t => (
@@ -191,26 +195,32 @@ export default function SearchScreen() {
       </View>
 
       {/* 实时结果列表 */}
-      <FlatList
-        data={filteredJobs}
-        renderItem={({ item }) => (
-          <JobCard
-            job={item}
-            onPress={handleJobPress}
-            onFavorite={handleFavorite}
-            isFavorited={isFavorited(item.id)}
-          />
-        )}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={styles.emptyText}>没有匹配的岗位</Text>
-            <Text style={styles.emptyHint}>试试调整筛选条件</Text>
-          </View>
-        }
-      />
+      {loading && jobs.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1a73e8" />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredJobs}
+          renderItem={({ item }) => (
+            <JobCard
+              job={item}
+              onPress={handleJobPress}
+              onFavorite={handleFavorite}
+              isFavorited={isFavorited(item.id)}
+            />
+          )}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>🔍</Text>
+              <Text style={styles.emptyText}>没有匹配的岗位</Text>
+              <Text style={styles.emptyHint}>试试调整筛选条件</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }
@@ -361,6 +371,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
   },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   // 空状态
   emptyContainer: {
     alignItems: 'center',
@@ -382,3 +397,4 @@ const styles = StyleSheet.create({
     color: '#bbb',
   },
 });
+

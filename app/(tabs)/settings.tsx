@@ -1,25 +1,33 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, Switch, TouchableOpacity, Alert, ScrollView,
+  ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useJobs } from '../../contexts/JobsContext';
 
 export default function SettingsScreen() {
+  const router = useRouter();
+  const { jobs, loading, lastUpdate, refresh } = useJobs();
+
   const [enableDeadlineReminder, setEnableDeadlineReminder] = useState(true);
   const [enableNewJobPush, setEnableNewJobPush] = useState(true);
   const [enableWeeklyRecommendation, setEnableWeeklyRecommendation] = useState(true);
   const [reminderDays, setReminderDays] = useState(3);
   const [updateFrequency, setUpdateFrequency] = useState(3);
+  const [checking, setChecking] = useState(false);
 
-  const handleManualUpdate = () => {
-    Alert.alert('更新数据', '确定要手动更新招聘数据吗？', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '确定',
-        onPress: () => {
-          Alert.alert('更新成功', '本次更新新增12个岗位，当前共60个有效岗位');
-        },
-      },
-    ]);
+  // 手动检查更新
+  const handleManualUpdate = async () => {
+    setChecking(true);
+    try {
+      await refresh();
+      Alert.alert('更新完成', `已获取最新岗位数据，当前共 ${jobs.length} 个岗位`);
+    } catch (e: any) {
+      Alert.alert('更新失败', e.message || '请检查网络连接后重试');
+    } finally {
+      setChecking(false);
+    }
   };
 
   // 开关设置项
@@ -67,8 +75,8 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* 数据采集 */}
-        <Text style={styles.groupTitle}>数据采集</Text>
+        {/* 数据更新 */}
+        <Text style={styles.groupTitle}>数据更新</Text>
         <View style={styles.group}>
           <LinkItem
             label="更新频率"
@@ -79,8 +87,21 @@ export default function SettingsScreen() {
               { text: '每7天', onPress: () => setUpdateFrequency(7) },
             ])}
           />
-          <LinkItem label="上次更新" value="2026-06-18" />
-          <LinkItem label="手动更新" value="点击更新" onPress={handleManualUpdate} />
+          <LinkItem label="上次更新" value={lastUpdate || '未知'} />
+          <LinkItem label="岗位总数" value={`${jobs.length} 个`} />
+          {/* 手动检查更新按钮 */}
+          <TouchableOpacity
+            style={[styles.updateBtn, checking && styles.updateBtnDisabled]}
+            onPress={handleManualUpdate}
+            disabled={checking || loading}
+            activeOpacity={0.7}
+          >
+            {checking ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text style={styles.updateBtnText}>检查更新</Text>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* 关于 */}
@@ -88,8 +109,10 @@ export default function SettingsScreen() {
         <View style={styles.group}>
           <LinkItem label="版本" value="v1.0.0" />
           <LinkItem label="数据来源" value="21家企业 + 15家研究院" />
-          <LinkItem label="下次更新" value="2026-06-21" />
-          <LinkItem label="岗位总数" value="60个有效岗位" />
+          <LinkItem
+            label="下次自动更新"
+            value={updateFrequency === 1 ? '每天' : `每${updateFrequency}天`}
+          />
         </View>
 
         {/* 底部信息 */}
@@ -146,6 +169,23 @@ const styles = StyleSheet.create({
   },
   settingValueStatic: {
     color: '#999',
+  },
+  updateBtn: {
+    margin: 12,
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#1a73e8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  updateBtnDisabled: {
+    opacity: 0.6,
+  },
+  updateBtnText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '600',
   },
   footer: {
     alignItems: 'center',

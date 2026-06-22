@@ -1,32 +1,31 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, TextInput, FlatList, RefreshControl, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, TextInput, FlatList, RefreshControl, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import JobCard from '../../components/JobCard';
-import { realJobs, getCities } from '../../data/realData';
+import { getCities, filterJobs } from '../../data/realData';
 import { Job } from '../../types/job';
 import { useFavorites } from '../../contexts/FavoritesContext';
-
-// 城市标签列表（延迟初始化）
-const getDefaultCityTags = (): string[] => {
-  try {
-    return ['全部', ...getCities()];
-  } catch {
-    return ['全部'];
-  }
-};
-const DEFAULT_CITY_TAGS = getDefaultCityTags();
+import { useJobs } from '../../contexts/JobsContext';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { jobs, loading, refresh } = useJobs();
   const { isFavorited, toggleFavorite } = useFavorites();
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>(realJobs);
+
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>(jobs);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedCity, setSelectedCity] = useState('全部');
   const [refreshing, setRefreshing] = useState(false);
 
+  // 城市标签列表（随远程数据动态更新）
+  const cityTags = useMemo(() => {
+    try { return ['全部', ...getCities(jobs)]; }
+    catch { return ['全部']; }
+  }, [jobs]);
+
   // 筛选逻辑（首页：关键词 + 城市快捷标签）
   const applyFilter = useCallback((keyword: string, city: string) => {
-    let filtered = [...realJobs];
+    let filtered = [...jobs];
 
     if (keyword.trim() !== '') {
       const kw = keyword.toLowerCase().trim();
@@ -40,7 +39,12 @@ export default function HomeScreen() {
     }
 
     setFilteredJobs(filtered);
-  }, []);
+  }, [jobs]);
+
+  // 初始化 / 远程数据更新时同步
+  React.useEffect(() => {
+    applyFilter(searchKeyword, selectedCity);
+  }, [jobs, applyFilter]);
 
   const handleSearch = (keyword: string) => {
     setSearchKeyword(keyword);
@@ -52,7 +56,7 @@ export default function HomeScreen() {
     applyFilter(searchKeyword, city);
   };
 
-  // 点击搜索栏 → 跳转到搜索页（精准筛选）
+  // 点击搜索栏 → 跳转到搜索页
   const goToSearch = () => {
     router.push('/(tabs)/search');
   };
@@ -67,13 +71,23 @@ export default function HomeScreen() {
     toggleFavorite(jobId);
   };
 
+  // 下拉刷新（触发远程检查）
   const handleRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      applyFilter(searchKeyword, selectedCity);
-      setRefreshing(false);
-    }, 1500);
+    await refresh();
+    applyFilter(searchKeyword, selectedCity);
+    setRefreshing(false);
   };
+
+  // 首次加载中
+  if (loading && jobs.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1a73e8" />
+        <Text style={styles.loadingText}>正在获取最新岗位数据...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -97,7 +111,7 @@ export default function HomeScreen() {
       <View style={styles.filterContainer}>
         <FlatList
           horizontal
-          data={DEFAULT_CITY_TAGS}
+          data={cityTags}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[styles.chip, selectedCity === item && styles.chipActive]}
@@ -150,6 +164,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#999',
   },
   searchRow: {
     flexDirection: 'row',
