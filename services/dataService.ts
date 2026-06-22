@@ -1,21 +1,25 @@
-// 远程数据服务 — 从 GitHub Raw 拉取最新岗位数据
+// 远程数据服务 — 从 CDN 拉取最新岗位数据
 // 支持版本检查、本地缓存、网络失败降级
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Job } from '../types/job';
 
 // ── 配置 ─────────────────────────────────────────
-// 双数据源：Gitee（国内优先） + GitHub（国际降级）
+// 三级数据源：jsdelivr CDN（国内最快）→ Gitee Raw → GitHub Raw（国际降级）
+// 注意：Gitee Raw 对较大 JSON 文件会触发内容审核（HTTP 451），仅用于 meta 小文件
+const JSDELIVR_BASE = 'https://cdn.jsdelivr.net/gh/xzminggh/polymer-job-hunter@master/data';
 const GITEE_BASE = 'https://gitee.com/xzmingmy/polymer-job-hunter/raw/master/data';
 const GITHUB_BASE = 'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data';
 
-let activeBase = GITEE_BASE;
+// 数据源优先级列表（meta 用全部，data 用 CDN + GitHub）
+const META_SOURCES = [JSDELIVR_BASE, GITEE_BASE, GITHUB_BASE];
+const DATA_SOURCES = [JSDELIVR_BASE, GITHUB_BASE]; // Gitee 排除（451审核拦截）
+
+let activeSource = JSDELIVR_BASE;
 
 // 轻量元数据（仅版本号，快速检查是否需要更新）
 const META_FILE = 'jobs-meta.json';
 const DATA_FILE = 'realJobs.json';
-const META_URL = `${activeBase}/${META_FILE}`;
-const DATA_URL = `${activeBase}/${DATA_FILE}`;
 
 // 本地缓存 key
 const CACHE_KEY = 'job_hunter_remote_data';
@@ -42,56 +46,46 @@ export interface RemoteJobsData {
 // ── 工具函数 ─────────────────────────────────────
 
 /**
- * 获取元数据（轻量，快速判断是否有更新）
- * Gitee 优先，失败降级 GitHub
+ * 通用多源获取：按优先级依次尝试，返回第一个成功的
  */
-export async function fetchMeta(): Promise<JobsMetaData | null> {
-  try {
-    const res = await fetch(`${GITEE_BASE}/${META_FILE}`, { cache: 'no-cache' });
-    if (res.ok) {
-      activeBase = GITEE_BASE;
-      return await res.json();
+async function fetchFromSources(
+  file: string,
+  sources: string[],
+  timeout = 12000,
+): Promise<{ data: any; source: string } | null> {
+  for (const base of sources) {
+    try {
+      const res = await fetch(`${base}/${file}`, {
+        cache: 'no-cache',
+        signal: AbortSignal.timeout(timeout),
+      });
+      if (res.ok) {
+        activeSource = base;
+        return { data: await res.json(), source: base };
+      }
+    } catch {
+      continue; // 超时或网络错误，尝试下一个源
     }
-  } catch {}
-  // 降级 GitHub
-  try {
-    const res = await fetch(`${GITHUB_BASE}/${META_FILE}`, { cache: 'no-cache' });
-    if (res.ok) {
-      activeBase = GITHUB_BASE;
-      return await res.json();
-    }
-  } catch {}
+  }
   return null;
 }
 
 /**
+ * 获取元数据（轻量，快速判断是否有更新）
+ * 三源降级：jsdelivr → Gitee → GitHub
+ */
+export async function fetchMeta(): Promise<JobsMetaData | null> {
+  const result = await fetchFromSources(META_FILE, META_SOURCES, 6000);
+  return result ? result.data : null;
+}
+
+/**
  * 获取完整岗位数据（远程）
- * 使用当前活跃的数据源（Gitee 或 GitHub）
+ * 两源降级：jsdelivr → GitHub（Gitee因451审核排除）
  */
 async function fetchRemoteData(): Promise<RemoteJobsData | null> {
-  const url = `${activeBase}/${DATA_FILE}`;
-  try {
-    const res = await fetch(url, {
-      cache: 'no-cache',
-      signal: AbortSignal.timeout(12000),
-    });
-    if (!res.ok) {
-      // 降级尝试另一个源
-      const fallbackUrl = activeBase === GITEE_BASE
-        ? `${GITHUB_BASE}/${DATA_FILE}`
-        : `${GITEE_BASE}/${DATA_FILE}`;
-      const fallbackRes = await fetch(fallbackUrl, {
-        cache: 'no-cache',
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!fallbackRes.ok) return null;
-      activeBase = activeBase === GITEE_BASE ? GITHUB_BASE : GITEE_BASE;
-      return await fallbackRes.json();
-    }
-    return await res.json();
-  } catch {
-    return null;
-  }
+  const result = await fetchFromSources(DATA_FILE, DATA_SOURCES);
+  return result ? result.data : null;
 }
 
 /**
