@@ -1,0 +1,8 @@
+// jobs-meta.json — 轻量元数据，供 App 快速检查更新
+// 此文件由 convert_csv_to_json.py 自动生成，也可手动编辑
+{
+  "version": "20260621",
+  "generatedAt": "2026-06-21",
+  "count": 60,
+  "note": "此文件由自动化脚本生成，请勿手动修改"
+}
