@@ -22,11 +22,11 @@ interface JobsContextValue {
 }
 
 // ── 远程配置 ─────────────────────────────────────────────────
-// 替换为实际的 GitHub Raw URL
+// GitHub Raw URL — 数据源（xzminggh 账号，master 分支）
 const META_URL =
-  'https://raw.githubusercontent.com/xzming/polymer-job-hunter/main/recruitment-app/data/jobs-meta.json';
+  'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data/jobs-meta.json';
 const DATA_URL =
-  'https://raw.githubusercontent.com/xzming/polymer-job-hunter/main/recruitment-app/data/realJobs.json';
+  'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data/realJobs.json';
 
 const CACHE_KEY = 'job_hunter_remote_data';
 const META_CACHE_KEY = 'job_hunter_remote_meta';
