@@ -22,12 +22,15 @@ interface JobsContextValue {
 }
 
 // ── 远程配置 ─────────────────────────────────────────────────
-// 双数据源：Gitee（国内优先） + GitHub（国际降级）
+// 三级数据源：jsdelivr CDN（国内最快）→ Gitee Raw（meta小文件可用）→ GitHub Raw
+// ⚠️ Gitee Raw 对 >30KB JSON 触发内容审核（HTTP 451），仅用于 meta 小文件
+const JSDELIVR_BASE = 'https://cdn.jsdelivr.net/gh/xzminggh/polymer-job-hunter@master/data';
 const GITEE_BASE = 'https://gitee.com/xzmingmy/polymer-job-hunter/raw/master/data';
 const GITHUB_BASE = 'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data';
 
-// 动态选择数据源（Gitee 优先，失败降级 GitHub）
-let activeBase = GITEE_BASE;
+// meta 用三源（含Gitee小文件），data 用两源（排除Gitee大文件）
+const META_SOURCES = [JSDELIVR_BASE, GITEE_BASE, GITHUB_BASE];
+const DATA_SOURCES = [JSDELIVR_BASE, GITHUB_BASE];
 
 const META_FILE = 'jobs-meta.json';
 const DATA_FILE = 'realJobs.json';
@@ -53,29 +56,21 @@ async function fetchJson(url: string, timeout = 8000): Promise<any> {
   }
 }
 
-// 自动切换数据源：先试 Gitee，失败降级 GitHub
-async function fetchMetaWithFallback(): Promise<any> {
-  const giteeMeta = await fetchJson(`${activeBase}/${META_FILE}`);
-  if (giteeMeta) return giteeMeta;
-  // Gitee 失败，降级到 GitHub
-  if (activeBase !== GITHUB_BASE) {
-    const githubMeta = await fetchJson(`${GITHUB_BASE}/${META_FILE}`);
-    if (githubMeta) {
-      activeBase = GITHUB_BASE; // 后续请求也用 GitHub
-      return githubMeta;
-    }
+// 通用多源获取：按优先级依次尝试，返回第一个成功的
+async function fetchJsonFromSources(file: string, sources: string[], timeout = 10000): Promise<any> {
+  for (const base of sources) {
+    const data = await fetchJson(`${base}/${file}`, timeout);
+    if (data) return data;
   }
   return null;
 }
 
+async function fetchMetaWithFallback(): Promise<any> {
+  return await fetchJsonFromSources(META_FILE, META_SOURCES, 6000);
+}
+
 async function fetchDataWithFallback(): Promise<any> {
-  const data = await fetchJson(`${activeBase}/${DATA_FILE}`, 15000);
-  if (data) return data;
-  if (activeBase !== GITHUB_BASE) {
-    const fallback = await fetchJson(`${GITHUB_BASE}/${DATA_FILE}`, 15000);
-    if (fallback) return fallback;
-  }
-  return null;
+  return await fetchJsonFromSources(DATA_FILE, DATA_SOURCES, 15000);
 }
 
 async function getCached(): Promise<RemoteJobsData | null> {
@@ -123,8 +118,10 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   const smartUpdate = useCallback(async (force = false) => {
     setLoading(true);
     try {
-      // 1. 获取远程元数据（Gitee优先，GitHub降级）
+      // 1. 获取远程元数据（jsdelivr优先，Gitee/GitHub降级）
       const remoteMeta = await fetchMetaWithFallback();
+      console.log('[JobsProvider] 远程meta:', remoteMeta ? `v${remoteMeta.version}, ${remoteMeta.count}条` : '获取失败');
+      
       if (!remoteMeta) {
         // 网络失败，尝试使用缓存
         const cached = await getCached();
@@ -132,6 +129,9 @@ export function JobsProvider({ children }: { children: ReactNode }) {
           setJobs(cached.jobs);
           setDataSource('remote');
           setLastUpdate(cached.generatedAt);
+          console.log('[JobsProvider] 网络失败，使用缓存:', cached.jobs.length, '条');
+        } else {
+          console.log('[JobsProvider] 网络失败，无缓存，使用bundled数据');
         }
         setLoading(false);
         return;
@@ -140,6 +140,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       // 2. 读取本地缓存元数据
       const cachedMetaRaw = await AsyncStorage.getItem(META_CACHE_KEY);
       const cachedMeta = cachedMetaRaw ? JSON.parse(cachedMetaRaw) : null;
+      console.log('[JobsProvider] 本地缓存meta:', cachedMeta ? `v${cachedMeta.version}` : '无缓存');
 
       // 3. 判断是否需要更新
       if (!force && cachedMeta && cachedMeta.version >= remoteMeta.version) {
@@ -148,20 +149,24 @@ export function JobsProvider({ children }: { children: ReactNode }) {
           setJobs(cached.jobs);
           setDataSource('remote');
           setLastUpdate(cached.generatedAt);
+          console.log('[JobsProvider] 版本相同，使用缓存:', cached.jobs.length, '条');
         }
         setLoading(false);
         return;
       }
 
-      // 4. 下载完整数据（Gitee优先，GitHub降级）
+      // 4. 下载完整数据（jsdelivr优先，GitHub降级）
+      console.log('[JobsProvider] 开始下载完整数据...');
       const remoteData = await fetchDataWithFallback();
       if (remoteData?.jobs) {
+        console.log('[JobsProvider] 远程数据下载成功:', remoteData.jobs.length, '条, v' + remoteData.version);
         await setCached(remoteData);
         await AsyncStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
         setJobs(remoteData.jobs);
         setDataSource('remote');
         setLastUpdate(remoteData.generatedAt);
       } else {
+        console.warn('[JobsProvider] 远程数据下载失败，降级到缓存/bundled');
         // 下载失败，降级到缓存或 bundled
         const cached = await getCached();
         if (cached) {
