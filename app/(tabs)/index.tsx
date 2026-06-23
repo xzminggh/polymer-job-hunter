@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, TextInput, FlatList, RefreshControl, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, FlatList, RefreshControl, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import JobCard from '../../components/JobCard';
 import { getCities, filterJobs } from '../../data/realData';
 import { Job } from '../../types/job';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useJobs } from '../../contexts/JobsContext';
+import { exportJobsToCsv, ExportResult } from '../../utils/csvExport';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function HomeScreen() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedCity, setSelectedCity] = useState('全部');
   const [refreshing, setRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // 城市标签列表（随远程数据动态更新）
   const cityTags = useMemo(() => {
@@ -77,6 +79,30 @@ export default function HomeScreen() {
     await refresh();
     applyFilter(searchKeyword, selectedCity);
     setRefreshing(false);
+  };
+
+  // 导出全部岗位为CSV文件
+  const handleExportCsv = async () => {
+    if (isExporting) return; // 防止重复点击
+    
+    if (!jobs || jobs.length === 0) {
+      Alert.alert('提示', '当前没有岗位数据可导出');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const result: ExportResult = await exportJobsToCsv(jobs);
+      if (result.success) {
+        Alert.alert('导出成功', result.message);
+      } else {
+        Alert.alert('导出失败', result.message);
+      }
+    } catch (error: any) {
+      Alert.alert('导出错误', error.message || '未知错误');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // 首次加载中
@@ -145,8 +171,22 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         ListHeaderComponent={
-          <View style={styles.resultHeader}>
-            <Text style={styles.resultCount}>共 {filteredJobs.length} 个岗位</Text>
+          <View>
+            <View style={styles.resultHeader}>
+              <Text style={styles.resultCount}>共 {filteredJobs.length} 个岗位</Text>
+              <TouchableOpacity 
+                style={[styles.exportBtn, isExporting && styles.exportBtnDisabled]} 
+                onPress={handleExportCsv} 
+                disabled={isExporting}
+                activeOpacity={0.7}
+              >
+                {isExporting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.exportBtnText}>📥 导出CSV</Text>
+                )}
+              </TouchableOpacity>
+            </View>
             <Text style={styles.resultHint}>下拉刷新 · 点「筛选」精准搜索</Text>
           </View>
         }
@@ -258,6 +298,23 @@ const styles = StyleSheet.create({
   resultHint: {
     fontSize: 11,
     color: '#bbb',
+  },
+  exportBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#27ae60',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    gap: 4,
+  },
+  exportBtnDisabled: {
+    backgroundColor: '#95a5a6',
+  },
+  exportBtnText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',

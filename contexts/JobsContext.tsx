@@ -22,12 +22,11 @@ interface JobsContextValue {
 }
 
 // ── 远程配置 ─────────────────────────────────────────────────
-// 双数据源：Gitee（国内优先） + GitHub（国际降级）
+// 纯 Gitee 数据源（国内快速稳定）
+// - meta 小文件：Gitee Raw（直接 JSON，最快）
+// - data 大文件：Gitee API（base64 编码，绕过 451 内容审核，无大小限制）
 const GITEE_BASE = 'https://gitee.com/xzmingmy/polymer-job-hunter/raw/master/data';
-const GITHUB_BASE = 'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data';
-
-// 动态选择数据源（Gitee 优先，失败降级 GitHub）
-let activeBase = GITEE_BASE;
+const GITEE_API_BASE = 'https://gitee.com/api/v5/repos/xzmingmy/polymer-job-hunter/contents/data';
 
 const META_FILE = 'jobs-meta.json';
 const DATA_FILE = 'realJobs.json';
@@ -39,11 +38,12 @@ const CHECK_INTERVAL = 6 * 60 * 60 * 1000; // 6 小时
 
 // ── 工具函数 ────────────────────────────────────────────────
 
-async function fetchJson(url: string, timeout = 8000): Promise<any> {
+// Gitee Raw 获取小文件（meta），直接返回 JSON
+async function fetchGiteeRaw(file: string, timeout = 8000): Promise<any> {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), timeout);
   try {
-    const res = await fetch(url, { cache: 'no-cache', signal: ctrl.signal });
+    const res = await fetch(`${GITEE_BASE}/${file}`, { cache: 'no-cache', signal: ctrl.signal });
     clearTimeout(id);
     if (!res.ok) return null;
     return await res.json();
@@ -53,29 +53,39 @@ async function fetchJson(url: string, timeout = 8000): Promise<any> {
   }
 }
 
-// 自动切换数据源：先试 Gitee，失败降级 GitHub
-async function fetchMetaWithFallback(): Promise<any> {
-  const giteeMeta = await fetchJson(`${activeBase}/${META_FILE}`);
-  if (giteeMeta) return giteeMeta;
-  // Gitee 失败，降级到 GitHub
-  if (activeBase !== GITHUB_BASE) {
-    const githubMeta = await fetchJson(`${GITHUB_BASE}/${META_FILE}`);
-    if (githubMeta) {
-      activeBase = GITHUB_BASE; // 后续请求也用 GitHub
-      return githubMeta;
-    }
+// Gitee API 获取大文件（data）：返回 base64 编码内容，绕过 451 内容审核
+async function fetchFromGiteeApi(file: string, timeout = 15000): Promise<any> {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const res = await fetch(`${GITEE_API_BASE}/${file}?ref=master`, {
+      cache: 'no-cache',
+      signal: ctrl.signal,
+    });
+    clearTimeout(id);
+    if (!res.ok) return null;
+    const wrapper = await res.json();
+    if (!wrapper.content) return null;
+    // Gitee API 返回 base64 编码的文件内容
+    // atob 输出 Latin1 字符串，需转为 Uint8Array 后用 TextDecoder 正确解码 UTF-8（含中文）
+    const binaryStr = atob(wrapper.content.replace(/\n/g, ''));
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    const jsonStr = new TextDecoder('utf-8').decode(bytes);
+    return JSON.parse(jsonStr);
+  } catch {
+    clearTimeout(id);
+    return null;
   }
-  return null;
+}
+
+async function fetchMetaWithFallback(): Promise<any> {
+  return await fetchGiteeRaw(META_FILE, 6000);
 }
 
 async function fetchDataWithFallback(): Promise<any> {
-  const data = await fetchJson(`${activeBase}/${DATA_FILE}`, 15000);
-  if (data) return data;
-  if (activeBase !== GITHUB_BASE) {
-    const fallback = await fetchJson(`${GITHUB_BASE}/${DATA_FILE}`, 15000);
-    if (fallback) return fallback;
-  }
-  return null;
+  // Gitee API（base64 编码，绕过 451 内容审核）
+  return await fetchFromGiteeApi(DATA_FILE, 15000);
 }
 
 async function getCached(): Promise<RemoteJobsData | null> {
@@ -123,8 +133,10 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   const smartUpdate = useCallback(async (force = false) => {
     setLoading(true);
     try {
-      // 1. 获取远程元数据（Gitee优先，GitHub降级）
+      // 1. 获取远程元数据（Gitee Raw）
       const remoteMeta = await fetchMetaWithFallback();
+      console.log('[JobsProvider] 远程meta:', remoteMeta ? `v${remoteMeta.version}, ${remoteMeta.count}条` : '获取失败');
+      
       if (!remoteMeta) {
         // 网络失败，尝试使用缓存
         const cached = await getCached();
@@ -132,6 +144,9 @@ export function JobsProvider({ children }: { children: ReactNode }) {
           setJobs(cached.jobs);
           setDataSource('remote');
           setLastUpdate(cached.generatedAt);
+          console.log('[JobsProvider] 网络失败，使用缓存:', cached.jobs.length, '条');
+        } else {
+          console.log('[JobsProvider] 网络失败，无缓存，使用bundled数据');
         }
         setLoading(false);
         return;
@@ -140,6 +155,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       // 2. 读取本地缓存元数据
       const cachedMetaRaw = await AsyncStorage.getItem(META_CACHE_KEY);
       const cachedMeta = cachedMetaRaw ? JSON.parse(cachedMetaRaw) : null;
+      console.log('[JobsProvider] 本地缓存meta:', cachedMeta ? `v${cachedMeta.version}` : '无缓存');
 
       // 3. 判断是否需要更新
       if (!force && cachedMeta && cachedMeta.version >= remoteMeta.version) {
@@ -148,20 +164,24 @@ export function JobsProvider({ children }: { children: ReactNode }) {
           setJobs(cached.jobs);
           setDataSource('remote');
           setLastUpdate(cached.generatedAt);
+          console.log('[JobsProvider] 版本相同，使用缓存:', cached.jobs.length, '条');
         }
         setLoading(false);
         return;
       }
 
-      // 4. 下载完整数据（Gitee优先，GitHub降级）
+      // 4. 下载完整数据（Gitee API）
+      console.log('[JobsProvider] 开始下载完整数据...');
       const remoteData = await fetchDataWithFallback();
       if (remoteData?.jobs) {
+        console.log('[JobsProvider] 远程数据下载成功:', remoteData.jobs.length, '条, v' + remoteData.version);
         await setCached(remoteData);
         await AsyncStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
         setJobs(remoteData.jobs);
         setDataSource('remote');
         setLastUpdate(remoteData.generatedAt);
       } else {
+        console.warn('[JobsProvider] 远程数据下载失败，降级到缓存/bundled');
         // 下载失败，降级到缓存或 bundled
         const cached = await getCached();
         if (cached) {

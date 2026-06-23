@@ -26,7 +26,11 @@
         "backgroundColor": "#1a73e8"
       },
       "package": "com.polymer.jobhunter",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
