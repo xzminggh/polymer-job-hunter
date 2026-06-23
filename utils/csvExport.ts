@@ -1,7 +1,7 @@
 // CSV导出工具 — 将岗位数据导出为CSV文件并分享保存
 // 支持中文Excel兼容（BOM头 + UTF-8编码）
 
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { Job } from '../types/job';
 
