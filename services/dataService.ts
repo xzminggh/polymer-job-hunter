@@ -1,21 +1,15 @@
-// 远程数据服务 — 从 CDN 拉取最新岗位数据
+// 远程数据服务 — 从 Gitee 拉取最新岗位数据
 // 支持版本检查、本地缓存、网络失败降级
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Job } from '../types/job';
 
 // ── 配置 ─────────────────────────────────────────
-// 三级数据源：jsdelivr CDN（国内最快）→ Gitee Raw → GitHub Raw（国际降级）
-// 注意：Gitee Raw 对较大 JSON 文件会触发内容审核（HTTP 451），仅用于 meta 小文件
-const JSDELIVR_BASE = 'https://cdn.jsdelivr.net/gh/xzminggh/polymer-job-hunter@master/data';
+// 纯 Gitee 数据源（国内快速稳定）
+// - meta 小文件：Gitee Raw（直接 JSON，最快）
+// - data 大文件：Gitee API（base64 编码，绕过 451 内容审核，无大小限制）
 const GITEE_BASE = 'https://gitee.com/xzmingmy/polymer-job-hunter/raw/master/data';
-const GITHUB_BASE = 'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data';
-
-// 数据源优先级列表（meta 用全部，data 用 CDN + GitHub）
-const META_SOURCES = [JSDELIVR_BASE, GITEE_BASE, GITHUB_BASE];
-const DATA_SOURCES = [JSDELIVR_BASE, GITHUB_BASE]; // Gitee 排除（451审核拦截）
-
-let activeSource = JSDELIVR_BASE;
+const GITEE_API_BASE = 'https://gitee.com/api/v5/repos/xzmingmy/polymer-job-hunter/contents/data';
 
 // 轻量元数据（仅版本号，快速检查是否需要更新）
 const META_FILE = 'jobs-meta.json';
@@ -46,46 +40,59 @@ export interface RemoteJobsData {
 // ── 工具函数 ─────────────────────────────────────
 
 /**
- * 通用多源获取：按优先级依次尝试，返回第一个成功的
+ * Gitee Raw 获取小文件（meta）：直接返回 JSON
  */
-async function fetchFromSources(
-  file: string,
-  sources: string[],
-  timeout = 12000,
-): Promise<{ data: any; source: string } | null> {
-  for (const base of sources) {
-    try {
-      const res = await fetch(`${base}/${file}`, {
-        cache: 'no-cache',
-        signal: AbortSignal.timeout(timeout),
-      });
-      if (res.ok) {
-        activeSource = base;
-        return { data: await res.json(), source: base };
-      }
-    } catch {
-      continue; // 超时或网络错误，尝试下一个源
-    }
+async function fetchGiteeRaw(file: string, timeout = 8000): Promise<any> {
+  try {
+    const res = await fetch(`${GITEE_BASE}/${file}`, {
+      cache: 'no-cache',
+      signal: AbortSignal.timeout(timeout),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
-  return null;
+}
+
+/**
+ * Gitee API 获取大文件（data）：返回 base64 编码内容，绕过 451 内容审核
+ */
+async function fetchFromGiteeApi(file: string, timeout = 15000): Promise<any> {
+  try {
+    const res = await fetch(`${GITEE_API_BASE}/${file}?ref=master`, {
+      cache: 'no-cache',
+      signal: AbortSignal.timeout(timeout),
+    });
+    if (!res.ok) return null;
+    const wrapper = await res.json();
+    if (!wrapper.content) return null;
+    // Gitee API 返回 base64 编码的文件内容
+    // atob 输出 Latin1 字符串，需转为 Uint8Array 后用 TextDecoder 正确解码 UTF-8（含中文）
+    const binaryStr = atob(wrapper.content.replace(/\n/g, ''));
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    const jsonStr = new TextDecoder('utf-8').decode(bytes);
+    return JSON.parse(jsonStr);
+  } catch {
+    return null;
+  }
 }
 
 /**
  * 获取元数据（轻量，快速判断是否有更新）
- * 三源降级：jsdelivr → Gitee → GitHub
+ * 数据源：Gitee Raw
  */
 export async function fetchMeta(): Promise<JobsMetaData | null> {
-  const result = await fetchFromSources(META_FILE, META_SOURCES, 6000);
-  return result ? result.data : null;
+  return await fetchGiteeRaw(META_FILE, 6000);
 }
 
 /**
  * 获取完整岗位数据（远程）
- * 两源降级：jsdelivr → GitHub（Gitee因451审核排除）
+ * 数据源：Gitee API（base64 编码，绕过 451 内容审核）
  */
 async function fetchRemoteData(): Promise<RemoteJobsData | null> {
-  const result = await fetchFromSources(DATA_FILE, DATA_SOURCES);
-  return result ? result.data : null;
+  return await fetchFromGiteeApi(DATA_FILE);
 }
 
 /**

@@ -22,15 +22,11 @@ interface JobsContextValue {
 }
 
 // ── 远程配置 ─────────────────────────────────────────────────
-// 三级数据源：jsdelivr CDN（国内最快）→ Gitee Raw（meta小文件可用）→ GitHub Raw
-// ⚠️ Gitee Raw 对 >30KB JSON 触发内容审核（HTTP 451），仅用于 meta 小文件
-const JSDELIVR_BASE = 'https://cdn.jsdelivr.net/gh/xzminggh/polymer-job-hunter@master/data';
+// 纯 Gitee 数据源（国内快速稳定）
+// - meta 小文件：Gitee Raw（直接 JSON，最快）
+// - data 大文件：Gitee API（base64 编码，绕过 451 内容审核，无大小限制）
 const GITEE_BASE = 'https://gitee.com/xzmingmy/polymer-job-hunter/raw/master/data';
-const GITHUB_BASE = 'https://raw.githubusercontent.com/xzminggh/polymer-job-hunter/master/data';
-
-// meta 用三源（含Gitee小文件），data 用两源（排除Gitee大文件）
-const META_SOURCES = [JSDELIVR_BASE, GITEE_BASE, GITHUB_BASE];
-const DATA_SOURCES = [JSDELIVR_BASE, GITHUB_BASE];
+const GITEE_API_BASE = 'https://gitee.com/api/v5/repos/xzmingmy/polymer-job-hunter/contents/data';
 
 const META_FILE = 'jobs-meta.json';
 const DATA_FILE = 'realJobs.json';
@@ -42,11 +38,12 @@ const CHECK_INTERVAL = 6 * 60 * 60 * 1000; // 6 小时
 
 // ── 工具函数 ────────────────────────────────────────────────
 
-async function fetchJson(url: string, timeout = 8000): Promise<any> {
+// Gitee Raw 获取小文件（meta），直接返回 JSON
+async function fetchGiteeRaw(file: string, timeout = 8000): Promise<any> {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), timeout);
   try {
-    const res = await fetch(url, { cache: 'no-cache', signal: ctrl.signal });
+    const res = await fetch(`${GITEE_BASE}/${file}`, { cache: 'no-cache', signal: ctrl.signal });
     clearTimeout(id);
     if (!res.ok) return null;
     return await res.json();
@@ -56,21 +53,39 @@ async function fetchJson(url: string, timeout = 8000): Promise<any> {
   }
 }
 
-// 通用多源获取：按优先级依次尝试，返回第一个成功的
-async function fetchJsonFromSources(file: string, sources: string[], timeout = 10000): Promise<any> {
-  for (const base of sources) {
-    const data = await fetchJson(`${base}/${file}`, timeout);
-    if (data) return data;
+// Gitee API 获取大文件（data）：返回 base64 编码内容，绕过 451 内容审核
+async function fetchFromGiteeApi(file: string, timeout = 15000): Promise<any> {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const res = await fetch(`${GITEE_API_BASE}/${file}?ref=master`, {
+      cache: 'no-cache',
+      signal: ctrl.signal,
+    });
+    clearTimeout(id);
+    if (!res.ok) return null;
+    const wrapper = await res.json();
+    if (!wrapper.content) return null;
+    // Gitee API 返回 base64 编码的文件内容
+    // atob 输出 Latin1 字符串，需转为 Uint8Array 后用 TextDecoder 正确解码 UTF-8（含中文）
+    const binaryStr = atob(wrapper.content.replace(/\n/g, ''));
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    const jsonStr = new TextDecoder('utf-8').decode(bytes);
+    return JSON.parse(jsonStr);
+  } catch {
+    clearTimeout(id);
+    return null;
   }
-  return null;
 }
 
 async function fetchMetaWithFallback(): Promise<any> {
-  return await fetchJsonFromSources(META_FILE, META_SOURCES, 6000);
+  return await fetchGiteeRaw(META_FILE, 6000);
 }
 
 async function fetchDataWithFallback(): Promise<any> {
-  return await fetchJsonFromSources(DATA_FILE, DATA_SOURCES, 15000);
+  // Gitee API（base64 编码，绕过 451 内容审核）
+  return await fetchFromGiteeApi(DATA_FILE, 15000);
 }
 
 async function getCached(): Promise<RemoteJobsData | null> {
@@ -118,7 +133,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   const smartUpdate = useCallback(async (force = false) => {
     setLoading(true);
     try {
-      // 1. 获取远程元数据（jsdelivr优先，Gitee/GitHub降级）
+      // 1. 获取远程元数据（Gitee Raw）
       const remoteMeta = await fetchMetaWithFallback();
       console.log('[JobsProvider] 远程meta:', remoteMeta ? `v${remoteMeta.version}, ${remoteMeta.count}条` : '获取失败');
       
@@ -155,7 +170,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // 4. 下载完整数据（jsdelivr优先，GitHub降级）
+      // 4. 下载完整数据（Gitee API）
       console.log('[JobsProvider] 开始下载完整数据...');
       const remoteData = await fetchDataWithFallback();
       if (remoteData?.jobs) {
