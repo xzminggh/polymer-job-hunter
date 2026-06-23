@@ -8,6 +8,7 @@ import { useJobs } from '../../contexts/JobsContext';
 import {
   getUpdateFrequency, scheduleUpdateReminder, cancelUpdateReminder,
   isNotificationEnabled, sendTestNotification, requestNotificationPermission,
+  isNotificationsSupported,
 } from '../../services/notificationService';
 
 export default function SettingsScreen() {
@@ -19,6 +20,7 @@ export default function SettingsScreen() {
   const [reminderDays, setReminderDays] = useState(3);
   const [updateFrequency, setUpdateFrequency] = useState(3);
   const [checking, setChecking] = useState(false);
+  const [notifySupported] = useState(isNotificationsSupported());
 
   // 启动时从持久化存储读取设置
   useEffect(() => {
@@ -33,10 +35,12 @@ export default function SettingsScreen() {
   // 通知开关切换 → 调度/取消定时通知
   const handlePushToggle = async (value: boolean) => {
     if (value) {
-      const granted = await requestNotificationPermission();
-      if (!granted) {
-        Alert.alert('提示', '需要在系统设置中允许通知权限');
-        return;
+      if (notifySupported) {
+        const granted = await requestNotificationPermission();
+        if (!granted) {
+          Alert.alert('提示', '需要在系统设置中允许通知权限');
+          return;
+        }
       }
       await scheduleUpdateReminder(updateFrequency);
       setEnableNewJobPush(true);
@@ -69,8 +73,12 @@ export default function SettingsScreen() {
 
   // 发送测试通知
   const handleTestNotify = async () => {
-    await sendTestNotification();
-    Alert.alert('测试通知', '通知已发送，请查看通知栏');
+    const ok = await sendTestNotification();
+    if (ok) {
+      Alert.alert('测试通知', '通知已发送，请查看通知栏');
+    } else {
+      Alert.alert('提示', '当前环境不支持本地推送通知。\n\nexpo-notifications 需要使用 Development Build（开发构建版）才能工作，Expo Go 中不可用。\n\n其他功能正常使用。');
+    }
   };
 
   // 开关设置项
@@ -108,6 +116,14 @@ export default function SettingsScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* 通知设置 */}
         <Text style={styles.groupTitle}>通知设置</Text>
+        {!notifySupported && (
+          <View style={styles.expoGoWarning}>
+            <Text style={styles.expoGoWarningText}>
+              ⚠️ 当前使用 Expo Go 调试，推送通知功能不可用。{'\n'}
+              打包成 APK 后通知功能将正常工作。
+            </Text>
+          </View>
+        )}
         <View style={styles.group}>
           <SwitchItem
             label="新岗位推送"
@@ -279,5 +295,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#bbb',
     textAlign: 'center',
+  },
+  expoGoWarning: {
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    marginLeft: 4,
+    marginRight: 4,
+  },
+  expoGoWarningText: {
+    fontSize: 12,
+    color: '#856404',
+    lineHeight: 18,
   },
 });

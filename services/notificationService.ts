@@ -1,7 +1,7 @@
 // 定时更新通知服务 — 用本地推送提醒用户打开 App 检查新岗位
-// Android 后台 fetch 不可靠（Doze 模式），本地通知更稳定
+// ⚠️ expo-notifications 在 Expo Go (SDK 53+) 中不可用
+// 采用懒加载：Expo Go 中自动降级为无通知模式，Development Build 中正常工作
 
-import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── 配置 ─────────────────────────────────────────────────
@@ -10,20 +10,46 @@ const UPDATE_FREQUENCY_KEY = 'job_hunter_update_frequency_days';
 const NOTIFICATION_ENABLED_KEY = 'job_hunter_notification_enabled';
 const LAST_NOTIFY_KEY = 'job_hunter_last_notify_time';
 
-// ── 通知处理器 ──────────────────────────────────────────────
+// ── 懒加载 expo-notifications ──────────────────────────────
+// Expo Go 中 require 会抛异常，用 try-catch 降级
 
-// 设置通知前台展示方式（静默，不打断用户）
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+let _Notifications: any = null;
+let _initialized = false;
+
+function getNotifications(): any {
+  if (_initialized) return _Notifications;
+  _initialized = true;
+
+  try {
+    const Notifications = require('expo-notifications');
+    // 设置通知前台展示方式
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
+    _Notifications = Notifications;
+  } catch (e) {
+    console.warn('[NotifyService] expo-notifications 不可用（Expo Go 模式），通知功能降级');
+    _Notifications = null;
+  }
+  return _Notifications;
+}
+
+/**
+ * 通知功能是否可用（Expo Go 中返回 false，Development Build 中返回 true）
+ */
+export function isNotificationsSupported(): boolean {
+  return getNotifications() !== null;
+}
 
 // ── 通知权限 ──────────────────────────────────────────────
 
 export async function requestNotificationPermission(): Promise<boolean> {
+  const Notifications = getNotifications();
+  if (!Notifications) return false;
   try {
     const { status } = await Notifications.requestPermissionsAsync();
     return status === 'granted';
@@ -33,6 +59,8 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 export async function checkNotificationPermission(): Promise<boolean> {
+  const Notifications = getNotifications();
+  if (!Notifications) return false;
   try {
     const { status } = await Notifications.getPermissionsAsync();
     return status === 'granted';
@@ -48,6 +76,15 @@ export async function checkNotificationPermission(): Promise<boolean> {
  * @param frequencyDays 更新频率（1/3/7天）
  */
 export async function scheduleUpdateReminder(frequencyDays: number): Promise<void> {
+  const Notifications = getNotifications();
+  if (!Notifications) {
+    // Expo Go 降级：只保存设置，不实际注册通知
+    await AsyncStorage.setItem(UPDATE_FREQUENCY_KEY, String(frequencyDays));
+    await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'true');
+    console.log('[NotifyService] Expo Go 模式：通知设置已保存（需 Development Build 才能实际推送）');
+    return;
+  }
+
   // 先清除所有已注册的通知
   await Notifications.cancelAllScheduledNotificationsAsync();
 
@@ -60,17 +97,6 @@ export async function scheduleUpdateReminder(frequencyDays: number): Promise<voi
     if (!granted) return;
   }
 
-  // 计算下次触发时间：当天 9:00 AM
-  const now = new Date();
-  const nextTrigger = new Date(now);
-  nextTrigger.setDate(nextTrigger.getDate() + frequencyDays);
-  nextTrigger.setHours(9, 0, 0, 0); // 上午 9 点
-
-  // 如果触发时间已过今天 9 点，就从明天开始
-  if (nextTrigger <= now) {
-    nextTrigger.setDate(nextTrigger.getDate() + 1);
-  }
-
   // 注册定时通知
   await Notifications.scheduleNotificationAsync({
     content: {
@@ -79,24 +105,26 @@ export async function scheduleUpdateReminder(frequencyDays: number): Promise<voi
       data: { type: 'update_reminder' },
     },
     trigger: {
-      // 重复间隔（秒）
       seconds: frequencyDays * 24 * 60 * 60,
       repeats: true,
-    } as Notifications.CalendarTriggerInput,
+    } as any,
   });
 
   // 保存频率设置
   await AsyncStorage.setItem(UPDATE_FREQUENCY_KEY, String(frequencyDays));
   await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'true');
 
-  console.log(`[NotifyService] 已注册定时通知：每 ${frequencyDays} 天 9:00 AM`);
+  console.log(`[NotifyService] 已注册定时通知：每 ${frequencyDays} 天`);
 }
 
 /**
  * 取消定时通知
  */
 export async function cancelUpdateReminder(): Promise<void> {
-  await Notifications.cancelAllScheduledNotificationsAsync();
+  const Notifications = getNotifications();
+  if (Notifications) {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  }
   await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'false');
   console.log('[NotifyService] 已取消所有定时通知');
 }
@@ -128,13 +156,16 @@ export async function isNotificationEnabled(): Promise<boolean> {
 /**
  * 立即发送一条"新岗位"通知（用于测试）
  */
-export async function sendTestNotification(): Promise<void> {
+export async function sendTestNotification(): Promise<boolean> {
+  const Notifications = getNotifications();
+  if (!Notifications) return false;
+
   const hasPermission = await checkNotificationPermission();
   if (!hasPermission) {
     const granted = await requestNotificationPermission();
     if (!granted) {
       console.warn('[NotifyService] 通知权限未授予');
-      return;
+      return false;
     }
   }
 
@@ -146,4 +177,5 @@ export async function sendTestNotification(): Promise<void> {
     },
     trigger: null, // 立即发送
   });
+  return true;
 }
