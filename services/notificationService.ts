@@ -1,7 +1,8 @@
 // 定时更新通知服务 — 用本地推送提醒用户打开 App 检查新岗位
 // ⚠️ expo-notifications 在 Expo Go (SDK 53+) 中不可用
-// 采用懒加载：Expo Go 中自动降级为无通知模式，Development Build 中正常工作
+// 用 Constants.appOwnership 检测运行环境，Expo Go 中完全跳过加载
 
+import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── 配置 ─────────────────────────────────────────────────
@@ -10,19 +11,29 @@ const UPDATE_FREQUENCY_KEY = 'job_hunter_update_frequency_days';
 const NOTIFICATION_ENABLED_KEY = 'job_hunter_notification_enabled';
 const LAST_NOTIFY_KEY = 'job_hunter_last_notify_time';
 
-// ── 懒加载 expo-notifications ──────────────────────────────
-// Expo Go 中 require 会抛异常，用 try-catch 降级
+// ── 环境检测 ──────────────────────────────────────────────
+// appOwnership: 'expo' = Expo Go, 'standalone' = 独立APP, 'generic' = Development Build
+// 在 Expo Go 中完全跳过 expo-notifications，避免模块加载即崩溃
 
+function isExpoGo(): boolean {
+  return Constants.appOwnership === 'expo';
+}
+
+// 懒加载 expo-notifications（仅非 Expo Go 环境）
 let _Notifications: any = null;
-let _initialized = false;
+let _loaded = false;
 
 function getNotifications(): any {
-  if (_initialized) return _Notifications;
-  _initialized = true;
+  if (_loaded) return _Notifications;
+  _loaded = true;
+
+  if (isExpoGo()) {
+    console.log('[NotifyService] Expo Go 模式：跳过 expo-notifications 加载');
+    return null;
+  }
 
   try {
     const Notifications = require('expo-notifications');
-    // 设置通知前台展示方式
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
@@ -31,17 +42,19 @@ function getNotifications(): any {
       }),
     });
     _Notifications = Notifications;
+    console.log('[NotifyService] expo-notifications 加载成功');
   } catch (e) {
-    console.warn('[NotifyService] expo-notifications 不可用（Expo Go 模式），通知功能降级');
+    console.warn('[NotifyService] expo-notifications 加载失败:', e);
     _Notifications = null;
   }
   return _Notifications;
 }
 
 /**
- * 通知功能是否可用（Expo Go 中返回 false，Development Build 中返回 true）
+ * 通知功能是否可用（Expo Go 中返回 false）
  */
 export function isNotificationsSupported(): boolean {
+  if (isExpoGo()) return false;
   return getNotifications() !== null;
 }
 
@@ -76,12 +89,13 @@ export async function checkNotificationPermission(): Promise<boolean> {
  * @param frequencyDays 更新频率（1/3/7天）
  */
 export async function scheduleUpdateReminder(frequencyDays: number): Promise<void> {
+  // 保存频率设置（无论是否支持通知都保存）
+  await AsyncStorage.setItem(UPDATE_FREQUENCY_KEY, String(frequencyDays));
+  await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'true');
+
   const Notifications = getNotifications();
   if (!Notifications) {
-    // Expo Go 降级：只保存设置，不实际注册通知
-    await AsyncStorage.setItem(UPDATE_FREQUENCY_KEY, String(frequencyDays));
-    await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'true');
-    console.log('[NotifyService] Expo Go 模式：通知设置已保存（需 Development Build 才能实际推送）');
+    console.log('[NotifyService] Expo Go 模式：通知设置已保存（打包后生效）');
     return;
   }
 
@@ -109,10 +123,6 @@ export async function scheduleUpdateReminder(frequencyDays: number): Promise<voi
       repeats: true,
     } as any,
   });
-
-  // 保存频率设置
-  await AsyncStorage.setItem(UPDATE_FREQUENCY_KEY, String(frequencyDays));
-  await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, 'true');
 
   console.log(`[NotifyService] 已注册定时通知：每 ${frequencyDays} 天`);
 }
