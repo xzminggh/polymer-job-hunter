@@ -1,10 +1,30 @@
 {
-  "version": "20260623",
-  "generatedAt": "2026-06-23 19:06:08",
-  "count": 100,
+  "version": "20260624",
+  "generatedAt": "2026-06-24 08:11:45",
+  "count": 118,
   "jobs": [
     {
       "id": "1",
+      "company": "万华化学",
+      "title": "研发工程师(化工新材料)",
+      "education": "本科/硕士",
+      "major": "化工/材料/化学",
+      "region": "烟台/宁波/上海",
+      "publishDate": "2025-09-21",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://scc.pku.edu.cn/f/recruitmentinfo/show?recruitmentId=c2ceb187062c4d669d12317a020eab0a",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "2",
       "company": "万华化学(上海)",
       "title": "AI / IT 工程师",
       "education": "硕士",
@@ -24,7 +44,7 @@
       "benefits": []
     },
     {
-      "id": "2",
+      "id": "3",
       "company": "万华化学(上海)",
       "title": "助理仪控工程师",
       "education": "本科、硕士",
@@ -44,7 +64,7 @@
       "benefits": []
     },
     {
-      "id": "3",
+      "id": "4",
       "company": "万华化学(上海)",
       "title": "助理设备工程师",
       "education": "本科、硕士",
@@ -64,7 +84,7 @@
       "benefits": []
     },
     {
-      "id": "4",
+      "id": "5",
       "company": "万华化学(上海)",
       "title": "助理运行工程师-工艺",
       "education": "本科、硕士",
@@ -84,7 +104,7 @@
       "benefits": []
     },
     {
-      "id": "5",
+      "id": "6",
       "company": "万华化学(上海)",
       "title": "助理运行工程师-质检",
       "education": "本科、硕士",
@@ -104,7 +124,7 @@
       "benefits": []
     },
     {
-      "id": "6",
+      "id": "7",
       "company": "万华化学(上海)",
       "title": "技术服务工程师",
       "education": "本科、硕士",
@@ -124,7 +144,7 @@
       "benefits": []
     },
     {
-      "id": "7",
+      "id": "8",
       "company": "万华化学(上海)",
       "title": "研发工程师",
       "education": "硕士、博士",
@@ -144,7 +164,27 @@
       "benefits": []
     },
     {
-      "id": "8",
+      "id": "9",
+      "company": "上海回天新材",
+      "title": "研发工程师(胶粘剂/高分子)",
+      "education": "硕士及以上",
+      "major": "高分子化学与物理/材料化学/化学工程等",
+      "region": "上海松江",
+      "publishDate": "2026-05-15",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://www.jobui.com/company/19889465/jobs/shuoshi/",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "10",
       "company": "中镭新材料",
       "title": "分析测试工程师",
       "education": "本科及以上",
@@ -164,7 +204,7 @@
       "benefits": []
     },
     {
-      "id": "9",
+      "id": "11",
       "company": "中镭新材料",
       "title": "工艺工程师",
       "education": "硕士及以上",
@@ -184,7 +224,7 @@
       "benefits": []
     },
     {
-      "id": "10",
+      "id": "12",
       "company": "中镭新材料",
       "title": "技术采购工程师",
       "education": "本科及以上",
@@ -204,7 +244,7 @@
       "benefits": []
     },
     {
-      "id": "11",
+      "id": "13",
       "company": "中镭新材料",
       "title": "材料研发工程师",
       "education": "不限",
@@ -224,7 +264,7 @@
       "benefits": []
     },
     {
-      "id": "12",
+      "id": "14",
       "company": "中镭新材料",
       "title": "材料研发工程师",
       "education": "硕士及以上",
@@ -244,7 +284,7 @@
       "benefits": []
     },
     {
-      "id": "13",
+      "id": "15",
       "company": "中镭新材料",
       "title": "研发助理工程师",
       "education": "硕士及以上",
@@ -264,7 +304,7 @@
       "benefits": []
     },
     {
-      "id": "14",
+      "id": "16",
       "company": "中镭新材料",
       "title": "质量体系工程师",
       "education": "本科及以上",
@@ -284,7 +324,7 @@
       "benefits": []
     },
     {
-      "id": "15",
+      "id": "17",
       "company": "中镭新材料",
       "title": "销售工程师",
       "education": "本科及以上",
@@ -304,7 +344,7 @@
       "benefits": []
     },
     {
-      "id": "16",
+      "id": "18",
       "company": "博云塑业",
       "title": "研发高级工程师",
       "education": "硕士及以上",
@@ -324,7 +364,87 @@
       "benefits": []
     },
     {
-      "id": "17",
+      "id": "19",
+      "company": "合肥杰事杰",
+      "title": "研发工程师(特种工程塑料)",
+      "education": "硕士及以上",
+      "major": "高分子/材料/化学类相关专业",
+      "region": "合肥-蜀山区",
+      "publishDate": "2026-06-16",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://graduate.buct.edu.cn/2026/0601/c1431a219977/pagem.htm",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "20",
+      "company": "合肥杰事杰",
+      "title": "研发管培生",
+      "education": "硕士",
+      "major": "高分子材料类相关专业",
+      "region": "合肥-蜀山区",
+      "publishDate": "2026-05-22",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://graduate.buct.edu.cn/2026/0601/c1431a219977/pagem.htm",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "21",
+      "company": "康达新材",
+      "title": "研发人员(PUR热熔胶/有机硅/聚氨酯)",
+      "education": "硕士",
+      "major": "高分子/化工/材料/化学",
+      "region": "上海/成都/北京",
+      "publishDate": "2025-11-16",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://www.jobui.com/company/19889465/jobs/shuoshi/",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "22",
+      "company": "普利特",
+      "title": "产品开发工程师(改性)",
+      "education": "硕士",
+      "major": "高分子相关专业",
+      "region": "上海青浦/嘉兴/广州/天津/重庆",
+      "publishDate": "2025-09-25",
+      "deadline": "2026-07-31",
+      "detailUrl": "https://career.hebut.edu.cn/recruitment/content/type/2/id/4625.html",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "23",
       "company": "普利特",
       "title": "制造品质",
       "education": "硕士及以上",
@@ -344,7 +464,7 @@
       "benefits": []
     },
     {
-      "id": "18",
+      "id": "24",
       "company": "普利特",
       "title": "技术类",
       "education": "博士",
@@ -364,7 +484,127 @@
       "benefits": []
     },
     {
-      "id": "19",
+      "id": "25",
+      "company": "普利特",
+      "title": "研发工程师(改性材料)",
+      "education": "博士",
+      "major": "高分子相关专业",
+      "region": "上海青浦/嘉兴",
+      "publishDate": "2025-09-25",
+      "deadline": "2026-07-31",
+      "detailUrl": "https://career.hebut.edu.cn/recruitment/content/type/2/id/4625.html",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "26",
+      "company": "普利特",
+      "title": "色彩开发工程师",
+      "education": "硕士",
+      "major": "高分子、轻化工程相关专业",
+      "region": "广州/重庆/天津/嘉兴",
+      "publishDate": "2025-09-25",
+      "deadline": "2026-07-31",
+      "detailUrl": "https://career.hebut.edu.cn/recruitment/content/type/2/id/4625.html",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "27",
+      "company": "浙江新和成",
+      "title": "化工研发类(校招)",
+      "education": "本科/硕士",
+      "major": "化学/化工/生物/材料等相关",
+      "region": "浙江新昌/上虞",
+      "publishDate": "2025-10-09",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://jdjyw.jlu.edu.cn/mportal/recruit/details?id=e74998fef73e4e56b35839bdd3a8ff90",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "28",
+      "company": "浙江新和成",
+      "title": "开发工程师(新材料)",
+      "education": "本科/硕士",
+      "major": "化学/化工/材料/生物等",
+      "region": "浙江新昌/上虞/山东潍坊",
+      "publishDate": "2026-04-30",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://xinhecheng1.zhiye.com/",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "29",
+      "company": "浙江海利得",
+      "title": "工艺工程师",
+      "education": "本科/硕士",
+      "major": "高分子材料/化工等相关",
+      "region": "嘉兴海宁",
+      "publishDate": "2025-09-22",
+      "deadline": "2026-10-30",
+      "detailUrl": "https://www.career.zju.edu.cn/jyxt/sczp/zpztgl/ckZpgwXq.zf?zpxxbh=3F32F696EB673F29E0653A68DD0E9B18",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "30",
+      "company": "浙江海利得",
+      "title": "研发工程师",
+      "education": "本科及以上",
+      "major": "高分子材料/化工/纺织/染整等相关",
+      "region": "嘉兴海宁",
+      "publishDate": "2025-09-22",
+      "deadline": "2026-10-30",
+      "detailUrl": "https://www.career.zju.edu.cn/jyxt/sczp/zpztgl/ckZpgwXq.zf?zpxxbh=3F32F696EB673F29E0653A68DD0E9B18",
+      "status": "进行中",
+      "category": "企业",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "31",
       "company": "海利得",
       "title": "工艺技术类",
       "education": "不限",
@@ -384,7 +624,7 @@
       "benefits": []
     },
     {
-      "id": "20",
+      "id": "32",
       "company": "海利得",
       "title": "研发工程师",
       "education": "硕士及以上",
@@ -404,7 +644,7 @@
       "benefits": []
     },
     {
-      "id": "21",
+      "id": "33",
       "company": "海利得",
       "title": "研发技术类",
       "education": "不限",
@@ -424,7 +664,7 @@
       "benefits": []
     },
     {
-      "id": "22",
+      "id": "34",
       "company": "海利得",
       "title": "设备技术类",
       "education": "不限",
@@ -444,7 +684,7 @@
       "benefits": []
     },
     {
-      "id": "23",
+      "id": "35",
       "company": "瀚海新材料",
       "title": "CVD材料研发工程师",
       "education": "本科及以上",
@@ -464,7 +704,7 @@
       "benefits": []
     },
     {
-      "id": "24",
+      "id": "36",
       "company": "瀚海新材料",
       "title": "信息",
       "education": "",
@@ -484,7 +724,7 @@
       "benefits": []
     },
     {
-      "id": "25",
+      "id": "37",
       "company": "瀚海新材料",
       "title": "分析助理工程师",
       "education": "本科及以上",
@@ -504,7 +744,7 @@
       "benefits": []
     },
     {
-      "id": "26",
+      "id": "38",
       "company": "瀚海新材料",
       "title": "合成开发工程师",
       "education": "硕士及以上",
@@ -524,7 +764,7 @@
       "benefits": []
     },
     {
-      "id": "27",
+      "id": "39",
       "company": "瀚海新材料",
       "title": "工艺放大技术工程师",
       "education": "本科及以上",
@@ -544,7 +784,7 @@
       "benefits": []
     },
     {
-      "id": "28",
+      "id": "40",
       "company": "瀚海新材料",
       "title": "应用助理工程师",
       "education": "本科及以上",
@@ -564,7 +804,7 @@
       "benefits": []
     },
     {
-      "id": "29",
+      "id": "41",
       "company": "瀚海新材料",
       "title": "应用开发工程师",
       "education": "硕士及以上",
@@ -584,7 +824,7 @@
       "benefits": []
     },
     {
-      "id": "30",
+      "id": "42",
       "company": "瀚海新材料",
       "title": "技术支持工程师",
       "education": "本科及以上",
@@ -604,7 +844,7 @@
       "benefits": []
     },
     {
-      "id": "31",
+      "id": "43",
       "company": "瀚海新材料",
       "title": "材料研发工程师",
       "education": "不限",
@@ -624,7 +864,7 @@
       "benefits": []
     },
     {
-      "id": "32",
+      "id": "44",
       "company": "瀚海新材料",
       "title": "材料研发工程师",
       "education": "本科及以上",
@@ -644,7 +884,7 @@
       "benefits": []
     },
     {
-      "id": "33",
+      "id": "45",
       "company": "瀚海新材料",
       "title": "知识产权工程师",
       "education": "本科及以上",
@@ -664,7 +904,7 @@
       "benefits": []
     },
     {
-      "id": "34",
+      "id": "46",
       "company": "瀚海新材料",
       "title": "苏州招聘材料研发工程师",
       "education": "不限",
@@ -684,7 +924,7 @@
       "benefits": []
     },
     {
-      "id": "35",
+      "id": "47",
       "company": "瀚海新材料",
       "title": "金属材料研发工程师",
       "education": "本科及以上",
@@ -704,7 +944,7 @@
       "benefits": []
     },
     {
-      "id": "36",
+      "id": "48",
       "company": "瀚海新材料",
       "title": "销售工程师",
       "education": "本科及以上",
@@ -724,7 +964,7 @@
       "benefits": []
     },
     {
-      "id": "37",
+      "id": "49",
       "company": "瀚海新材料",
       "title": "锂电池正极材料研发工程师",
       "education": "不限",
@@ -744,7 +984,7 @@
       "benefits": []
     },
     {
-      "id": "38",
+      "id": "50",
       "company": "瀚海新材料",
       "title": "高分子材料研发工程师",
       "education": "本科及以上",
@@ -764,7 +1004,7 @@
       "benefits": []
     },
     {
-      "id": "39",
+      "id": "51",
       "company": "瀚海新材料",
       "title": "高分子材料研发工程师/高级研发工程师",
       "education": "硕士及以上",
@@ -784,7 +1024,7 @@
       "benefits": []
     },
     {
-      "id": "40",
+      "id": "52",
       "company": "瀚海新材料",
       "title": "高级材料研发工程师",
       "education": "硕士及以上",
@@ -804,7 +1044,7 @@
       "benefits": []
     },
     {
-      "id": "41",
+      "id": "53",
       "company": "瀚海新材料",
       "title": "高级研发工程师",
       "education": "博士",
@@ -824,7 +1064,7 @@
       "benefits": []
     },
     {
-      "id": "42",
+      "id": "54",
       "company": "福斯特",
       "title": "研发工程师",
       "education": "不限",
@@ -844,7 +1084,7 @@
       "benefits": []
     },
     {
-      "id": "43",
+      "id": "55",
       "company": "福斯特",
       "title": "高分子材料研发工程师",
       "education": "不限",
@@ -864,7 +1104,7 @@
       "benefits": []
     },
     {
-      "id": "44",
+      "id": "56",
       "company": "锦艺新材料",
       "title": "信息",
       "education": "研究生",
@@ -884,7 +1124,27 @@
       "benefits": []
     },
     {
-      "id": "45",
+      "id": "57",
+      "company": "中石油(上海)新材料研究院",
+      "title": "高层次人才(电子信息材料)",
+      "education": "博士",
+      "major": "材料科学与工程/微电子材料/高分子材料/精细化工",
+      "region": "上海",
+      "publishDate": "2026-03-30",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://finance.sina.com.cn/wm/2026-03-30/doc-inhsukny2756869.shtml",
+      "status": "进行中",
+      "category": "研究院",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "58",
       "company": "中科院上海有机化学研究所",
       "title": "分子尺度表征中心研究助理招聘启事",
       "education": "",
@@ -904,7 +1164,7 @@
       "benefits": []
     },
     {
-      "id": "46",
+      "id": "59",
       "company": "中科院上海有机化学研究所",
       "title": "博士后招聘",
       "education": "博士",
@@ -924,7 +1184,7 @@
       "benefits": []
     },
     {
-      "id": "47",
+      "id": "60",
       "company": "中科院上海有机化学研究所",
       "title": "如有意向可联系袁经理",
       "education": "",
@@ -944,7 +1204,7 @@
       "benefits": []
     },
     {
-      "id": "48",
+      "id": "61",
       "company": "中科院上海有机化学研究所",
       "title": "王鹏课题组博士后招聘启事",
       "education": "博士",
@@ -964,7 +1224,7 @@
       "benefits": []
     },
     {
-      "id": "49",
+      "id": "62",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所前沿基础研究部独立PI吴桐课题组博士后",
       "education": "博士",
@@ -984,7 +1244,7 @@
       "benefits": []
     },
     {
-      "id": "50",
+      "id": "63",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所压电陶瓷材料与器件课题组招聘博士后",
       "education": "博士",
@@ -1004,7 +1264,7 @@
       "benefits": []
     },
     {
-      "id": "51",
+      "id": "64",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所无机材料X射线结构表征组课题组招聘博士后",
       "education": "博士",
@@ -1024,7 +1284,7 @@
       "benefits": []
     },
     {
-      "id": "52",
+      "id": "65",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所材料谱学组分表征与应用课题组博士后",
       "education": "博士",
@@ -1044,7 +1304,7 @@
       "benefits": []
     },
     {
-      "id": "53",
+      "id": "66",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所生物材料表面与界面课题组招聘博士后",
       "education": "博士",
@@ -1064,7 +1324,7 @@
       "benefits": []
     },
     {
-      "id": "54",
+      "id": "67",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所等离子喷涂课题组博士后",
       "education": "博士",
@@ -1084,7 +1344,7 @@
       "benefits": []
     },
     {
-      "id": "55",
+      "id": "68",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所纳米孔硅基材料项目组博士后",
       "education": "博士",
@@ -1104,7 +1364,7 @@
       "benefits": []
     },
     {
-      "id": "56",
+      "id": "69",
       "company": "中科院上海硅酸盐研究所",
       "title": "中国科学院上海硅酸盐研究所绿色复合生物材料课题组招聘博士后",
       "education": "博士",
@@ -1124,7 +1384,67 @@
       "benefits": []
     },
     {
-      "id": "57",
+      "id": "70",
+      "company": "中科院上海硅酸盐研究所",
+      "title": "光学陶瓷与复合材料课题组岗位",
+      "education": "硕士及以上",
+      "major": "材料/化学/物理",
+      "region": "上海",
+      "publishDate": "2026-05-26",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://www.sic.ac.cn/glbm/rlzyc/kygl/202605/t20260526_8209490.html",
+      "status": "进行中",
+      "category": "研究院",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "71",
+      "company": "中科院上海硅酸盐研究所",
+      "title": "压电陶瓷材料与器件课题组岗位",
+      "education": "硕士及以上",
+      "major": "材料/化学/物理",
+      "region": "上海",
+      "publishDate": "2026-06-10",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://www.sic.ac.cn/glbm/rlzyc/kygl/202606/t20260610_8227079.html",
+      "status": "进行中",
+      "category": "研究院",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "72",
+      "company": "中科院上海硅酸盐研究所",
+      "title": "透明与光功能陶瓷课题组岗位",
+      "education": "硕士及以上",
+      "major": "材料/化学/物理",
+      "region": "上海",
+      "publishDate": "2026-06-22",
+      "deadline": "2026-12-31",
+      "detailUrl": "https://www.sic.ac.cn/glbm/rlzyc/kygl/202606/t20260622_8231847.html",
+      "status": "进行中",
+      "category": "研究院",
+      "jobType": "研发类",
+      "isNew": true,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "73",
       "company": "中科院化学研究所",
       "title": "职能部门招聘启事",
       "education": "",
@@ -1144,7 +1464,7 @@
       "benefits": []
     },
     {
-      "id": "58",
+      "id": "74",
       "company": "恒逸研究院",
       "title": "制剂研发高级研究员",
       "education": "硕士及以上",
@@ -1164,7 +1484,7 @@
       "benefits": []
     },
     {
-      "id": "59",
+      "id": "75",
       "company": "恒逸研究院",
       "title": "制剂研究员",
       "education": "本科及以上",
@@ -1184,7 +1504,7 @@
       "benefits": []
     },
     {
-      "id": "60",
+      "id": "76",
       "company": "恒逸研究院",
       "title": "制剂高级研究员",
       "education": "本科及以上",
@@ -1204,7 +1524,7 @@
       "benefits": []
     },
     {
-      "id": "61",
+      "id": "77",
       "company": "恒逸研究院",
       "title": "量化研究员",
       "education": "硕士及以上",
@@ -1224,7 +1544,47 @@
       "benefits": []
     },
     {
-      "id": "62",
+      "id": "78",
+      "company": "苏州实验室",
+      "title": "助理研究员/博士后(精准材料)",
+      "education": "博士",
+      "major": "材料/物理/化学/计算",
+      "region": "苏州工业园区",
+      "publishDate": "2026-05-18",
+      "deadline": "2026-07-17",
+      "detailUrl": "https://www.gaoxiaojob.com/announcement/detail/330188.html",
+      "status": "进行中",
+      "category": "研究院",
+      "jobType": "研发类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "79",
+      "company": "苏州实验室",
+      "title": "工程技术人员(精准材料制造)",
+      "education": "硕士及以上",
+      "major": "材料/化学/物理/数学/计算机等",
+      "region": "苏州工业园区",
+      "publishDate": "2026-05-18",
+      "deadline": "2026-07-17",
+      "detailUrl": "https://www.gaoxiaojob.com/announcement/detail/330188.html",
+      "status": "进行中",
+      "category": "研究院",
+      "jobType": "工程类",
+      "isNew": false,
+      "isUrgent": false,
+      "description": "",
+      "requirements": "",
+      "salary": "",
+      "benefits": []
+    },
+    {
+      "id": "80",
       "company": "复旦大学高分子科学系",
       "title": "中国历史地理研究所招聘青年副研究员",
       "education": "",
@@ -1244,7 +1604,7 @@
       "benefits": []
     },
     {
-      "id": "63",
+      "id": "81",
       "company": "复旦大学高分子科学系",
       "title": "企业工作站博士后",
       "education": "博士",
@@ -1264,7 +1624,7 @@
       "benefits": []
     },
     {
-      "id": "64",
+      "id": "82",
       "company": "复旦大学高分子科学系",
       "title": "博士后科研助理",
       "education": "博士",
@@ -1284,7 +1644,7 @@
       "benefits": []
     },
     {
-      "id": "65",
+      "id": "83",
       "company": "复旦大学高分子科学系",
       "title": "复旦大学化学系SMILE课题组诚招博士后",
       "education": "博士",
@@ -1304,7 +1664,7 @@
       "benefits": []
     },
     {
-      "id": "66",
+      "id": "84",
       "company": "复旦大学高分子科学系",
       "title": "复旦大学博士后",
       "education": "博士",
@@ -1324,7 +1684,7 @@
       "benefits": []
     },
     {
-      "id": "67",
+      "id": "85",
       "company": "复旦大学高分子科学系",
       "title": "复旦大学智能复杂体系基础理论与关键技术实验室招聘博士后",
       "education": "博士",
@@ -1344,7 +1704,7 @@
       "benefits": []
     },
     {
-      "id": "68",
+      "id": "86",
       "company": "复旦大学高分子科学系",
       "title": "流动站博士后",
       "education": "博士",
@@ -1364,7 +1724,7 @@
       "benefits": []
     },
     {
-      "id": "69",
+      "id": "87",
       "company": "复旦大学高分子科学系",
       "title": "类脑芯片与片上智能系统研究院招聘青年研究员",
       "education": "",
@@ -1384,7 +1744,7 @@
       "benefits": []
     },
     {
-      "id": "70",
+      "id": "88",
       "company": "复旦大学高分子科学系",
       "title": "高分子科学系丁建东教授",
       "education": "",
@@ -1404,7 +1764,7 @@
       "benefits": []
     },
     {
-      "id": "71",
+      "id": "89",
       "company": "浙江大学高分子科学与工程学系",
       "title": "出站博士后",
       "education": "博士",
@@ -1424,7 +1784,7 @@
       "benefits": []
     },
     {
-      "id": "72",
+      "id": "90",
       "company": "浙江大学高分子科学与工程学系",
       "title": "在读博士后",
       "education": "博士",
@@ -1444,7 +1804,7 @@
       "benefits": []
     },
     {
-      "id": "73",
+      "id": "91",
       "company": "上海大学材料基因组工程研究院",
       "title": "在站博士后",
       "education": "博士",
@@ -1464,7 +1824,7 @@
       "benefits": []
     },
     {
-      "id": "74",
+      "id": "92",
       "company": "上海大学材料基因组工程研究院",
       "title": "定向在站博士后",
       "education": "博士",
@@ -1484,7 +1844,7 @@
       "benefits": []
     },
     {
-      "id": "75",
+      "id": "93",
       "company": "中石化(上海)石油化工研究院",
       "title": "01",
       "education": "博士",
@@ -1504,7 +1864,7 @@
       "benefits": []
     },
     {
-      "id": "76",
+      "id": "94",
       "company": "中石油(上海)新材料研究院",
       "title": "科研项目管理总监",
       "education": "硕士及以上",
@@ -1524,7 +1884,7 @@
       "benefits": []
     },
     {
-      "id": "77",
+      "id": "95",
       "company": "中石油(上海)新材料研究院",
       "title": "资深研究员/研究员/高级研发工程师",
       "education": "博士",
@@ -1544,7 +1904,7 @@
       "benefits": []
     },
     {
-      "id": "78",
+      "id": "96",
       "company": "中石油(上海)新材料研究院",
       "title": "首席科学家",
       "education": "博士",
@@ -1564,7 +1924,7 @@
       "benefits": []
     },
     {
-      "id": "79",
+      "id": "97",
       "company": "中科院化学研究所",
       "title": "化学与生命健康交叉中心招聘启事",
       "education": "不限",
@@ -1584,7 +1944,7 @@
       "benefits": []
     },
     {
-      "id": "80",
+      "id": "98",
       "company": "中科院化学研究所",
       "title": "化学所工程塑料实验室博士后和项目聘用人员招聘启事",
       "education": "博士",
@@ -1604,7 +1964,7 @@
       "benefits": []
     },
     {
-      "id": "81",
+      "id": "99",
       "company": "中科院化学研究所",
       "title": "化学所有机固体实验室博士后和项目聘用人员招聘启事",
       "education": "博士",
@@ -1624,7 +1984,7 @@
       "benefits": []
     },
     {
-      "id": "82",
+      "id": "100",
       "company": "中科院化学研究所",
       "title": "化学所极端环境高分子材料实验室热固性高分子课题组项目聘用人员招聘启事",
       "education": "不限",
@@ -1644,7 +2004,7 @@
       "benefits": []
     },
     {
-      "id": "83",
+      "id": "101",
       "company": "中科院化学研究所",
       "title": "化学所极端环境高分子材料实验室项目聘用人员招聘启事",
       "education": "不限",
@@ -1664,7 +2024,7 @@
       "benefits": []
     },
     {
-      "id": "84",
+      "id": "102",
       "company": "中科院化学研究所",
       "title": "化学所活体分析化学实验室博士后和项目聘用人员招聘启事",
       "education": "博士",
@@ -1684,7 +2044,7 @@
       "benefits": []
     },
     {
-      "id": "85",
+      "id": "103",
       "company": "中科院化学研究所",
       "title": "化学所高分子物理与化学实验室项目聘用人员招聘启事",
       "education": "不限",
@@ -1704,7 +2064,7 @@
       "benefits": []
     },
     {
-      "id": "86",
+      "id": "104",
       "company": "中科院化学研究所",
       "title": "博士后招聘启事",
       "education": "博士",
@@ -1724,7 +2084,7 @@
       "benefits": []
     },
     {
-      "id": "87",
+      "id": "105",
       "company": "中科院化学研究所",
       "title": "怀柔研究中心招聘启事",
       "education": "不限",
@@ -1744,7 +2104,7 @@
       "benefits": []
     },
     {
-      "id": "88",
+      "id": "106",
       "company": "中科院化学研究所",
       "title": "支撑岗位工作人员招聘启事",
       "education": "不限",
@@ -1764,7 +2124,7 @@
       "benefits": []
     },
     {
-      "id": "89",
+      "id": "107",
       "company": "中科院化学研究所",
       "title": "海内外杰出人才招聘启事",
       "education": "不限",
@@ -1784,7 +2144,7 @@
       "benefits": []
     },
     {
-      "id": "90",
+      "id": "108",
       "company": "恒逸研究院",
       "title": "分析研究员",
       "education": "本科及以上",
@@ -1804,7 +2164,7 @@
       "benefits": []
     },
     {
-      "id": "91",
+      "id": "109",
       "company": "恒逸研究院",
       "title": "分析高级研究员",
       "education": "本科及以上",
@@ -1824,7 +2184,7 @@
       "benefits": []
     },
     {
-      "id": "92",
+      "id": "110",
       "company": "恒逸研究院",
       "title": "恒逸集团研究员",
       "education": "硕士及以上",
@@ -1836,7 +2196,7 @@
       "status": "进行中",
       "category": "研究院/事业单位",
       "jobType": "研究员/专家",
-      "isNew": true,
+      "isNew": false,
       "isUrgent": false,
       "description": "",
       "requirements": "",
@@ -1844,7 +2204,7 @@
       "benefits": []
     },
     {
-      "id": "93",
+      "id": "111",
       "company": "恒逸研究院",
       "title": "杭州招聘研究员",
       "education": "不限",
@@ -1864,7 +2224,7 @@
       "benefits": []
     },
     {
-      "id": "94",
+      "id": "112",
       "company": "恒逸研究院",
       "title": "研发分析研究员",
       "education": "硕士及以上",
@@ -1884,7 +2244,7 @@
       "benefits": []
     },
     {
-      "id": "95",
+      "id": "113",
       "company": "恒逸研究院",
       "title": "研发助理工程师",
       "education": "硕士及以上",
@@ -1904,7 +2264,7 @@
       "benefits": []
     },
     {
-      "id": "96",
+      "id": "114",
       "company": "恒逸研究院",
       "title": "研发高级工程师",
       "education": "博士",
@@ -1924,7 +2284,7 @@
       "benefits": []
     },
     {
-      "id": "97",
+      "id": "115",
       "company": "恒逸研究院",
       "title": "研究院管培生",
       "education": "硕士及以上",
@@ -1944,7 +2304,7 @@
       "benefits": []
     },
     {
-      "id": "98",
+      "id": "116",
       "company": "苏州国家实验室",
       "title": "求职顾问",
       "education": "不限",
@@ -1964,7 +2324,7 @@
       "benefits": []
     },
     {
-      "id": "99",
+      "id": "117",
       "company": "苏州国家实验室",
       "title": "预浸料研发工程师",
       "education": "硕士及以上",
@@ -1984,7 +2344,7 @@
       "benefits": []
     },
     {
-      "id": "100",
+      "id": "118",
       "company": "苏州国家实验室",
       "title": "高才博士后",
       "education": "博士",
